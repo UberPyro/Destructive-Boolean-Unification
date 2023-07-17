@@ -1,0 +1,4 @@
+(executable
+ (public_name dbu)
+ (name main)
+ (libraries dbu))
