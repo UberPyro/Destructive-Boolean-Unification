@@ -26,12 +26,12 @@ module Make(C : Constant) = struct
   open Printf
   let rec pretty_ubool out = uget %> pretty_ubool_ out
   and pretty_ubool_ out = function
-    | [] -> fprintf out "%s" @@ C.to_string (C.zero)
+    | [] -> fprintf out "%s" @@ C.to_string C.zero
     | h :: t -> 
       pretty_ubool_inner out h;
       List.iter (fun x -> fprintf out " ^ "; pretty_ubool_inner out x) t
   and pretty_ubool_inner out = function
-    | [] -> fprintf out "%s" @@ C.to_string (C.one)
+    | [] -> fprintf out "%s" @@ C.to_string C.one
     | h :: t -> 
       pretty_boolean out h;
       List.iter (fun x -> fprintf out " & "; pretty_boolean out x) t

@@ -13,9 +13,9 @@ module C = struct
 end
 
 module E = Make(C)
-
 open E
 
+(* Convert variables to integers *)
 let m : (string, boolean list list) Hashtbl.t = Hashtbl.create 32
 let memo x = 
   Hashtbl.find_option m x
