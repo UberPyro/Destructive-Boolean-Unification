@@ -126,7 +126,10 @@ module Make(C : Constant) = struct
         let x, t1, t2 = extract t in
         let t1c = add_xor t1 [[]] in
         solve (mul_idem t1c t2);
-        x := BExpr (add_xor (mul_idem t1c (bfresh_ ())) t2)
+        let sol = simp (add_xor (mul_idem t1c (bfresh_ ())) t2) in
+        (* let[@warning "-8"] (BVar k) = !x in
+        printf "Subbing X%d <- %s\n" k (pretty_print pretty_ubool_ sol); *)
+        x := BExpr sol
   
   let size = List.flatten %> List.length
   let smaller x y = if size y > size x then y else x
