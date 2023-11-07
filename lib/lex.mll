@@ -16,8 +16,7 @@ rule token = parse
   | "$" {EOF}
   | whitespace {token lexbuf}
   
-  | "&" {AND}
-  | "^" {XOR}
+  | "+" {XOR}
   | cap_id as c {VAR c}
   | '0' {ZERO}
   | '1' {ONE}
@@ -25,6 +24,6 @@ rule token = parse
   | "(" {LPAREN}
   | ")" {RPAREN}
 
-  | "=?=" {UNIFY}
+  | "=?" {UNIFY}
 
   | _ as s {failwith (Printf.sprintf "Unexpected character %c" s)}
