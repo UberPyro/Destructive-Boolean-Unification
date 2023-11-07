@@ -1,7 +1,7 @@
 open! Batteries
 open Ubool
 
-module C = struct
+module Boolean = struct
   type t = bool
   let mul = (&&)
   let add x y = (x || y) && not (x && y)
@@ -13,7 +13,7 @@ module C = struct
     | false -> "0"
 end
 
-module E = Make(C)
+module E = Make(Boolean)
 open E
 
 let m : (string, E.t) Hashtbl.t = Hashtbl.create 32
