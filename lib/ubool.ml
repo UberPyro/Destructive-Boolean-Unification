@@ -113,9 +113,17 @@ module Make(C : Constant) = struct
       else t
     ) x xs
   
-  let select_var = 
-    List.map snd %> List.filter (Fun.negate List.is_empty)
-    %> smallterm %> List.hd
+  let counts e candidates = 
+    List.concat_map snd e
+    |> List.fold_left (fun c t -> 
+      Map.modify_opt t (Option.map succ) c
+    ) (List.enum candidates |> Enum.map (fun x -> x, 0) |> Map.of_enum)
+    |> Map.enum |> List.of_enum |> List.sort (fun x y -> compare (snd x) (snd y))
+    |> List.map fst
+  
+  let select_var e = 
+    List.map snd e |> List.filter (Fun.negate List.is_empty)
+    |> smallterm |> counts e |> List.hd
   
   let factor u = 
     List.partition_map (fun (coeff, vars) -> 
