@@ -127,8 +127,8 @@ module Make(C : Constant) = struct
       let u = List.map snd e |> smallterm |> List.hd in
       let t1, t2 = factor u e in
       solve (mul t2 (one @ t1));
-      printf "Subbing [%d] |-> " (getvar u);
-      print_anf (uexpr (simp (t2 @ mul (var (fresh ())) (one @ t1))));
+      (* printf "Subbing [%d] |-> " (getvar u);
+      print_anf (uexpr (simp (t2 @ mul (var (fresh ())) (one @ t1)))); *)
       uset u (Expr (simp (t2 @ mul (var (fresh ())) (one @ t1))))
   
   let unify r = unite ~sel:(curry @@ function
