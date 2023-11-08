@@ -106,29 +106,12 @@ module Make(C : Constant) = struct
     let out = IO.output_string () in
     pretty_anf out u;
     print_endline (IO.close_out out)
-
-  let count = 
-    List.fold_left (fun c (_, vars) -> 
-      List.fold_left (fun c' var -> 
-        Map.modify_opt var 
-          (Option.map_default (fun x -> Some (x + 1)) (Some 0)) c'
-      ) c vars
-    ) Map.empty %> Map.enum %> List.of_enum
   
-  let smallterms = 
-    List.fold_left (function
-      | [] -> List.singleton
-      | t :: _ as ts -> fun t' -> 
-        match[@warning "-8"] List.compare_lengths (snd t') (snd t) with
-        | 1 -> ts
-        | 0 -> t' :: ts
-        | -1 -> [t']
-    ) []
-  
-  let select_var = 
-    smallterms %> count
-    %> List.sort (fun x y -> compare (snd y) (snd x))
-    %> List.hd %> fst
+  let[@warning "-8"] smallterm (x :: xs) = 
+    List.fold_left (fun t t' -> 
+      if List.compare_lengths t t' = 1 then t'
+      else t
+    ) x xs
   
   let factor u = 
     List.partition_map (fun (coeff, vars) -> 
@@ -141,7 +124,7 @@ module Make(C : Constant) = struct
     | [] -> ()
     | [_, []] -> failwith "No unifiers."
     | e -> 
-      let u = select_var e in
+      let u = List.map snd e |> smallterm |> List.hd in
       let t1, t2 = factor u e in
       solve (mul t2 (one @ t1));
       printf "Subbing [%d] |-> " (getvar u);
