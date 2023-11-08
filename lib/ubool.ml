@@ -113,6 +113,10 @@ module Make(C : Constant) = struct
       else t
     ) x xs
   
+  let select_var = 
+    List.map snd %> List.filter (Fun.negate List.is_empty)
+    %> smallterm %> List.hd
+  
   let factor u = 
     List.partition_map (fun (coeff, vars) -> 
       match[@warning "-8"] List.partition (Uref.equal u) vars with
@@ -124,7 +128,7 @@ module Make(C : Constant) = struct
     | [] -> ()
     | [_, []] -> failwith "No unifiers."
     | e -> 
-      let u = List.map snd e |> smallterm |> List.hd in
+      let u = select_var e in
       let t1, t2 = factor u e in
       solve (mul t2 (one @ t1));
       (* printf "Subbing [%d] |-> " (getvar u);
