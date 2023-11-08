@@ -51,9 +51,9 @@ module Make(C : Constant) = struct
     | Expr [coeff, []], _ when C.eq coeff C.one -> v
     | _, Expr [coeff, []] when C.eq coeff C.one -> u
     | Var _, Expr e -> 
-      uexpr (List.map (Tuple2.map2 (fun vs -> u :: vs)) e)
+      uexpr (List.map (Tuple2.map2 (List.cons u)) e)
     | Expr e, Var _ -> 
-      uexpr (List.map (Tuple2.map2 (fun vs -> v :: vs)) e)
+      uexpr (List.map (Tuple2.map2 (List.cons v)) e)
     | Expr e1, Expr e2 -> uexpr (mul e1 e2)
     | Var _, Var _ -> uexpr [C.one, [u; v]]
   
@@ -115,6 +115,21 @@ module Make(C : Constant) = struct
       ) c vars
     ) Map.empty %> Map.enum %> List.of_enum
   
+  let smallterms = 
+    List.fold_left (function
+      | [] -> List.singleton
+      | t :: _ as ts -> fun t' -> 
+        match[@warning "-8"] List.compare_lengths (snd t') (snd t) with
+        | 1 -> ts
+        | 0 -> t' :: ts
+        | -1 -> [t']
+    ) []
+  
+  let select_var = 
+    smallterms %> count
+    %> List.sort (fun x y -> compare (snd y) (snd x))
+    %> List.hd %> fst
+  
   let factor u = 
     List.partition_map (fun (coeff, vars) -> 
       match[@warning "-8"] List.partition (Uref.equal u) vars with
@@ -126,13 +141,12 @@ module Make(C : Constant) = struct
     | [] -> ()
     | [_, []] -> failwith "No unifiers."
     | e -> 
-      count e |> List.sort (fun x y -> compare (snd x) (snd y))
-      |> List.hd |> fst |> fun u -> 
-        let t1, t2 = factor u e in
-        solve (mul t2 (one @ t1));
-        (* printf "Subbing [%d] |-> " (getvar u);
-        print_anf (uexpr (simp (t2 @ mul (var (fresh ())) (one @ t1)))); *)
-        uset u (Expr (simp (t2 @ mul (var (fresh ())) (one @ t1))))
+      let u = select_var e in
+      let t1, t2 = factor u e in
+      solve (mul t2 (one @ t1));
+      printf "Subbing [%d] |-> " (getvar u);
+      print_anf (uexpr (simp (t2 @ mul (var (fresh ())) (one @ t1))));
+      uset u (Expr (simp (t2 @ mul (var (fresh ())) (one @ t1))))
   
   let unify r = unite ~sel:(curry @@ function
     | Var i, _ | _, Var i -> Var i
