@@ -144,7 +144,7 @@ module Make(C : Constant) = struct
       uset u (Expr (simp (t2 @ mul (var (fresh ())) (one @ t1))))
   
   let unify r = unite ~sel:(curry @@ function
-    | Var i, _ | _, Var i -> Var i
+    | Var _, x | x, Var _ -> x
     | Expr e1 as x, Expr e2 -> 
       solve (e1 @ e2);
       x
